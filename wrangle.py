@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+import geopandas
 from pytz import timezone
 from datetime import datetime as dt
 from shapely.geometry import Point
@@ -8,6 +9,7 @@ def load_in_json(file):
     with open(file) as json_data:
         d = json.load(json_data)
     return d
+
 
 def turn_google_location_json_into_pandas(json_dictionary):
 
@@ -21,6 +23,7 @@ def turn_google_location_json_into_pandas(json_dictionary):
     altitude = []
     vertical_acc = []
     mode = []
+
     utc = timezone('UTC')
     perth = timezone('Australia/Perth')
 
@@ -54,3 +57,18 @@ def turn_google_location_json_into_pandas(json_dictionary):
     df['geometry'] = df.apply(lambda x: Point((float(x.longitude), float(x.latitude))), axis=1)
 
     return df
+
+
+def create_geometry(df):
+    """
+    Needs longitude and latitude variables
+    :param df:
+    :return:
+    """
+    df['geometry'] = df.apply(lambda x: Point((float(x.longitude), float(x.latitude))), axis=1)
+    return df
+
+
+def turn_geo_df_into_shp(df, file):
+    df = geopandas.GeoDataFrame(df, geometry='geometry')
+    df.to_file(file, driver='ESRI Shapefile')
