@@ -1,7 +1,8 @@
 import json
-# import pandas as pd
+import pandas as pd
 from pytz import timezone
 from datetime import datetime as dt
+from shapely.geometry import Point
 
 def load_in_json(file):
     with open(file) as json_data:
@@ -45,3 +46,11 @@ def turn_google_location_json_into_pandas(json_dictionary):
             mode.append(point['activity'][0]['activity'][0]['type'])
         else:
             mode.append(" ")
+
+    df = pd.DataFrame(
+        {'date': date, 'time': time, 'timeperth': time_perth, 'latitude': latitude, 'longitude': longitude,
+         'accuracy': accuracy, 'altitude': altitude, 'vert_acc': vertical_acc, 'mode': mode})
+
+    df['geometry'] = df.apply(lambda x: Point((float(x.longitude), float(x.latitude))), axis=1)
+
+    return df
